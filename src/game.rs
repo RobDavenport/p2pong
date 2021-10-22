@@ -54,14 +54,14 @@ impl Game {
 impl Blend for Game {
     fn blend(&self, previous: &Self, alpha: f32) -> Self {
         let ball = match (self.ball.as_ref(), previous.ball.as_ref()) {
-            (Some(a), Some(b)) => Some(a.blend(&b, alpha)),
+            (Some(a), Some(b)) => Some(a.blend(b, alpha)),
             _ => None,
         };
 
         let paddles_iter = self.paddles.iter().zip(previous.paddles.iter());
 
         let mut result_iter = paddles_iter.map(|pair| match pair {
-            (Some(a), Some(b)) => Some(a.blend(&b, alpha)),
+            (Some(a), Some(b)) => Some(a.blend(b, alpha)),
             _ => None,
         });
 

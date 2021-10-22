@@ -1,6 +1,6 @@
 pub enum CollisionResult {
-    CollisionTop,
-    CollisionBottom,
-    CollisionScore,
-    CollisionPaddle,
+    Top,
+    Bottom,
+    Score,
+    Paddle,
 }

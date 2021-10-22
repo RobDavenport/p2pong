@@ -16,10 +16,10 @@ impl Ball {
         // Collision against top & bottom of field
         if self.position.y - self.radius <= 0.0 {
             println!("collision top");
-            return Some(CollisionResult::CollisionTop);
+            return Some(CollisionResult::Top);
         } else if self.position.y + self.radius >= SCREEN_HEIGHT {
             println!("collision bottom");
-            return Some(CollisionResult::CollisionBottom);
+            return Some(CollisionResult::Bottom);
         }
 
         // Collision against paddles
@@ -35,11 +35,11 @@ impl Ball {
     pub fn update(&mut self, paddles: &[Option<Paddle>; 2]) {
         if let Some(collision) = self.check_collisions(paddles) {
             match collision {
-                CollisionResult::CollisionTop | CollisionResult::CollisionBottom => {
+                CollisionResult::Top | CollisionResult::Bottom => {
                     self.velocity.y = -self.velocity.y
                 }
-                CollisionResult::CollisionScore => todo!(),
-                CollisionResult::CollisionPaddle => todo!(),
+                CollisionResult::Score => todo!(),
+                CollisionResult::Paddle => todo!(),
             }
         }
 
