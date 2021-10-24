@@ -40,36 +40,6 @@ impl Game {
         }
     }
 
-    fn save_game_state(&mut self, cell: GameStateCell, frame: Frame) {
-        assert_eq!(self.game_frame, frame);
-        let buffer = bincode::serialize(&self).unwrap();
-        let checksum = fletcher16(&buffer) as u64;
-
-        cell.save(GameState::new(frame, Some(buffer), Some(checksum)));
-    }
-
-    fn load_game_state(&mut self, cell: GameStateCell) {
-        let state_to_load = cell.load();
-        *self = bincode::deserialize(&state_to_load.buffer.unwrap()).unwrap();
-    }
-
-    fn next_frame(&mut self, inputs: Vec<GameInput>) {
-        inputs.into_iter().enumerate().for_each(|(player, input)| {
-            let input: Input = bincode::deserialize(input.input()).unwrap();
-            self.paddles[player].input = input.clone();
-        });
-
-        self.paddles.iter_mut().for_each(|paddle| {
-            paddle.update();
-        });
-
-        if let Some(point_scored) = self.ball.update(&self.paddles) {
-            self.scores[point_scored] = self.scores[point_scored].wrapping_add(1)
-        }
-
-        self.game_frame += 1;
-    }
-
     // Draw everything relevant to the game
     pub fn draw(&self) {
         self.paddles.iter().for_each(|paddle| paddle.draw());
@@ -91,6 +61,36 @@ impl Game {
             WHITE,
         );
     }
+
+    fn save_game_state(&mut self, cell: GameStateCell, frame: Frame) {
+        assert_eq!(self.game_frame, frame);
+        let buffer = bincode::serialize(&self).unwrap();
+        let checksum = fletcher16(&buffer) as u64;
+
+        cell.save(GameState::new(frame, Some(buffer), Some(checksum)));
+    }
+
+    fn load_game_state(&mut self, cell: GameStateCell) {
+        let state_to_load = cell.load();
+        *self = bincode::deserialize(&state_to_load.buffer.unwrap()).unwrap();
+    }
+
+    fn next_frame(&mut self, inputs: Vec<GameInput>) {
+        inputs.into_iter().enumerate().for_each(|(player, input)| {
+            let input: Input = bincode::deserialize(input.input()).unwrap();
+            self.paddles[player].input = input;
+        });
+
+        self.paddles.iter_mut().for_each(|paddle| {
+            paddle.update();
+        });
+
+        if let Some(point_scored) = self.ball.update(&self.paddles) {
+            self.scores[point_scored] = self.scores[point_scored].wrapping_add(1)
+        }
+
+        self.game_frame += 1;
+    }
 }
 
 impl Blend for Game {
@@ -104,7 +104,7 @@ impl Blend for Game {
             game_frame: self.game_frame,
             paddles: [paddle_iter.next().unwrap(), paddle_iter.next().unwrap()],
             ball: self.ball.blend(&previous.ball, alpha),
-            scores: self.scores.clone(),
+            scores: self.scores,
         }
     }
 }
@@ -114,8 +114,8 @@ fn fletcher16(data: &[u8]) -> u16 {
     let mut sum1: u16 = 0;
     let mut sum2: u16 = 0;
 
-    for index in 0..data.len() {
-        sum1 = (sum1 + data[index] as u16) % 255;
+    for chunk in data {
+        sum1 = (sum1 + *chunk as u16) % 255;
         sum2 = (sum2 + sum1) % 255;
     }
 

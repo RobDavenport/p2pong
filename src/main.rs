@@ -33,7 +33,7 @@ fn window_conf() -> Conf {
 
 const P1_PORT: u16 = 7000;
 const P2_PORT: u16 = 7001;
-const LOCAL_IP: &'static str = "127.0.0.1";
+const LOCAL_IP: &str = "127.0.0.1";
 
 #[macroquad::main(window_conf)]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

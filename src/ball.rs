@@ -25,36 +25,6 @@ impl Ball {
         }
     }
 
-    // Check all collisions of the ball
-    // Includes checks against:
-    //   Floor & Roof
-    //   Left & Right sides
-    //   Passed in paddles
-    fn check_collisions(&self, paddles: &[Paddle; 2]) -> Option<CollisionResult> {
-        // Collision against top & bottom of field
-        if self.position.y - self.radius <= 0.0 {
-            return Some(CollisionResult::Top);
-        } else if self.position.y + self.radius >= SCREEN_HEIGHT {
-            return Some(CollisionResult::Bottom);
-        }
-
-        // Collision against left & right of field
-        if self.position.x - self.radius <= 0.0 {
-            return Some(CollisionResult::Left);
-        } else if self.position.x + self.radius >= SCREEN_WIDTH {
-            return Some(CollisionResult::Right);
-        }
-
-        // Collision against paddles
-        for paddle in paddles.iter() {
-            if let Some(angle) = paddle.check_collision_against_ball(self) {
-                return Some(CollisionResult::Paddle(angle));
-            }
-        }
-
-        None
-    }
-
     // "Tick" our ball. Checks collisions and updates its own
     // position based on its velocity.
     // May reset the ball if it has collided with the left or right side.
@@ -87,6 +57,36 @@ impl Ball {
         self.position += self.velocity * game::TICK_TIME;
 
         result
+    }
+
+    // Check all collisions of the ball
+    // Includes checks against:
+    //   Floor & Roof
+    //   Left & Right sides
+    //   Passed in paddles
+    fn check_collisions(&self, paddles: &[Paddle; 2]) -> Option<CollisionResult> {
+        // Collision against top & bottom of field
+        if self.position.y - self.radius <= 0.0 {
+            return Some(CollisionResult::Top);
+        } else if self.position.y + self.radius >= SCREEN_HEIGHT {
+            return Some(CollisionResult::Bottom);
+        }
+
+        // Collision against left & right of field
+        if self.position.x - self.radius <= 0.0 {
+            return Some(CollisionResult::Left);
+        } else if self.position.x + self.radius >= SCREEN_WIDTH {
+            return Some(CollisionResult::Right);
+        }
+
+        // Collision against paddles
+        for paddle in paddles.iter() {
+            if let Some(angle) = paddle.check_collision_against_ball(self) {
+                return Some(CollisionResult::Paddle(angle));
+            }
+        }
+
+        None
     }
 
     pub fn draw(&self) {
