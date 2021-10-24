@@ -1,5 +1,7 @@
 use macroquad::prelude::Vec2;
 
+// This trait is used to interpolate two structs based
+// on the passed in alpha amount
 pub trait Blend {
     fn blend(&self, previous: &Self, alpha: f32) -> Self;
 }

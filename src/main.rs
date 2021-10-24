@@ -27,6 +27,7 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    // Set up some initial state
     let mut previous_state = None;
     let mut current_state = Game::new();
 
@@ -35,24 +36,33 @@ async fn main() {
     let tick_time = Duration::from_secs_f32(game::TICK_TIME);
 
     loop {
+        // Get the current time
         let new_time = Instant::now();
         let frame_time = new_time - current_time;
         current_time = new_time;
 
+        // Track our progress until the next update tick.
         accumulator += frame_time;
 
+        // Since we separate the rendering from the update logic
+        // We might update multiple times per frame, or even zero
         while accumulator >= tick_time {
             previous_state = Some(current_state.clone());
             current_state.update();
             accumulator -= tick_time;
         }
 
+        // Begin the drawing
         clear_background(BLACK);
 
-        let alpha = accumulator.as_secs_f32() / tick_time.as_secs_f32();
+        // In the case where we are rendering a frame between updates, we
+        // have to interpolate the game state to create a smooth image,
+        // otherwise we may have a choppy image if the game updates
+        // slower than our FPS.
         if previous_state.is_some() {
+            let alpha = accumulator.as_secs_f32() / tick_time.as_secs_f32();
             let blended = Game::blend(&current_state, previous_state.as_ref().unwrap(), alpha);
-            blended.draw();
+            blended.draw()
         } else {
             current_state.draw()
         };

@@ -24,6 +24,11 @@ impl Ball {
         }
     }
 
+    // Check all collisions of the ball
+    // Includes checks against:
+    //   Floor & Roof
+    //   Left & Right sides
+    //   Passed in paddles
     fn check_collisions(&self, paddles: &[Paddle; 2]) -> Option<CollisionResult> {
         // Collision against top & bottom of field
         if self.position.y - self.radius <= 0.0 {
@@ -49,6 +54,9 @@ impl Ball {
         None
     }
 
+    // "Tick" our ball. Checks collisions and updates its own
+    // position based on its velocity.
+    // May reset the ball if it has collided with the left or right side.
     pub fn update(&mut self, paddles: &[Paddle; 2]) -> Option<usize> {
         let mut result = None;
 
@@ -70,7 +78,8 @@ impl Ball {
             };
 
             // Get faster each time it collides with something
-            // BUG: This should only be called if its Top or Paddle, but isn't really game breaking
+            // This should really only be called if its Top or Paddle, but isn't game breaking
+            // so we can just leave it for code clarity
             self.velocity *= SPEED_INCREASE;
         }
 

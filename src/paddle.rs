@@ -33,6 +33,7 @@ impl Paddle {
         }
     }
 
+    // Update the paddles position based on its input
     pub fn update(&mut self) {
         if let Some(input) = &self.input {
             // Move the paddle

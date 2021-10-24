@@ -41,6 +41,7 @@ impl Game {
             .for_each(|(controller, paddle)| paddle.input = controller.input.clone());
     }
 
+    // Updates everything within the game state.
     pub fn update(&mut self) {
         self.read_input();
 
@@ -55,6 +56,7 @@ impl Game {
         }
     }
 
+    // Draw everything relevant to the game
     pub fn draw(&self) {
         self.paddles.iter().for_each(|paddle| paddle.draw());
 

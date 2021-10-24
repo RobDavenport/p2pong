@@ -11,6 +11,7 @@ pub enum Input {
     Down,
 }
 
+// Set up our key defaults
 const UP_KEYS: [KeyCode; 2] = [KeyCode::W, KeyCode::Up];
 const DOWN_KEYS: [KeyCode; 2] = [KeyCode::S, KeyCode::Down];
 
@@ -19,6 +20,7 @@ impl Controller {
         Self { input: None }
     }
 
+    // Check if the keys of the passed in player are down
     pub fn read_input(&mut self, player: usize) {
         if is_key_down(UP_KEYS[player]) {
             self.input = Some(Input::Up)
@@ -27,11 +29,5 @@ impl Controller {
         } else {
             self.input = None
         }
-    }
-}
-
-impl Default for Controller {
-    fn default() -> Self {
-        Self::new()
     }
 }
