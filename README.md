@@ -20,5 +20,5 @@ To run the game locally:
 
 This will connect to 127.0.0.1 using port 7000 (for p1) and port 7001 (for p2)
 
-To run remotely:
-1. `cargo run [p1/p2] [IP_ADDRESS]`
+To run remotely given a known peer:
+1. `cargo run [p1/p2] [IP_ADDRESS_OF_PEER]`
