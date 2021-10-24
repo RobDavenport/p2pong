@@ -12,15 +12,27 @@ use game::*;
 use macroquad::prelude::*;
 
 const SCREEN_HEIGHT: f32 = 800.0;
+const SCREEN_WIDTH: f32 = 1600.0;
 
-#[macroquad::main("p2pong")]
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "P2Pong".to_owned(),
+        fullscreen: false,
+        window_resizable: false,
+        window_height: SCREEN_HEIGHT as i32,
+        window_width: SCREEN_WIDTH as i32,
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
     let mut previous_state = None;
     let mut current_state = Game::new();
 
     let mut current_time = Instant::now();
     let mut accumulator = Duration::new(0, 0);
-    let tick_rate = Duration::from_secs_f32(game::TICK_RATE);
+    let tick_time = Duration::from_secs_f32(game::TICK_TIME);
 
     loop {
         let new_time = Instant::now();
@@ -29,15 +41,15 @@ async fn main() {
 
         accumulator += frame_time;
 
-        while accumulator >= tick_rate {
+        while accumulator >= tick_time {
             previous_state = Some(current_state.clone());
             current_state.update();
-            accumulator -= tick_rate;
+            accumulator -= tick_time;
         }
 
         clear_background(BLACK);
 
-        let alpha = accumulator.as_secs_f32() / tick_rate.as_secs_f32();
+        let alpha = accumulator.as_secs_f32() / tick_time.as_secs_f32();
         if previous_state.is_some() {
             let blended = Game::blend(&current_state, previous_state.as_ref().unwrap(), alpha);
             blended.draw();

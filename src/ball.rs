@@ -2,7 +2,7 @@ use macroquad::prelude::{draw_circle, Vec2, WHITE};
 
 use crate::paddle::Paddle;
 use crate::SCREEN_HEIGHT;
-use crate::{blend::Blend, collision_result::CollisionResult, game::TICK_RATE};
+use crate::{blend::Blend, collision_result::CollisionResult, game};
 
 #[derive(Clone)]
 pub struct Ball {
@@ -43,7 +43,7 @@ impl Ball {
             }
         }
 
-        self.position += self.velocity * TICK_RATE
+        self.position += self.velocity * game::TICK_TIME
     }
 
     pub fn draw(&self) {

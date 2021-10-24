@@ -2,7 +2,9 @@ use macroquad::prelude::vec2;
 
 use crate::{ball::Ball, blend::Blend, controller::Controller, paddle::Paddle};
 
-pub const TICK_RATE: f32 = 1.0 / 30.0; //20 times per second
+
+const TICKS_PER_SECOND: f32 = 120.0;
+pub const TICK_TIME: f32 = 1.0 / TICKS_PER_SECOND;
 
 #[derive(Clone)]
 pub struct Game {

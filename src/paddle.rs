@@ -1,6 +1,6 @@
 use macroquad::prelude::Rect;
 
-use crate::{blend::Blend, controller::Input, game::TICK_RATE};
+use crate::{blend::Blend, controller::Input, game};
 
 const PADDLE_SPEED: f32 = 5.0;
 
@@ -14,8 +14,8 @@ impl Paddle {
     pub fn update(&mut self) {
         if let Some(input) = &self.input {
             self.rect.y += match input {
-                Input::Up => -PADDLE_SPEED * TICK_RATE,
-                Input::Down => PADDLE_SPEED * TICK_RATE,
+                Input::Up => -PADDLE_SPEED * game::TICK_TIME,
+                Input::Down => PADDLE_SPEED * game::TICK_TIME,
             }
         }
     }
