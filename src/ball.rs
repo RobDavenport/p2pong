@@ -1,4 +1,5 @@
 use macroquad::prelude::{draw_circle, vec2, Vec2, WHITE};
+use serde::{Deserialize, Serialize};
 
 use crate::paddle::Paddle;
 use crate::{blend::Blend, collision_result::CollisionResult, game};
@@ -8,7 +9,7 @@ const SPEED_INCREASE: f32 = 1.05; // 5% per hit.
 const BALL_VELOCITY_X: f32 = 150.0;
 const BALL_VELOCITY_Y: f32 = 50.0;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Ball {
     pub position: Vec2,
     pub velocity: Vec2,

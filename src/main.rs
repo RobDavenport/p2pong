@@ -5,14 +5,20 @@ mod controller;
 mod game;
 mod paddle;
 
-use std::time::{Duration, Instant};
+use std::{
+    net::SocketAddr,
+    time::{Duration, Instant},
+};
 
 use blend::Blend;
+use controller::Input;
 use game::*;
+use ggrs::{GGRSError, P2PSession, PlayerType, SessionState};
 use macroquad::prelude::*;
 
-const SCREEN_HEIGHT: f32 = 400.0;
+const SCREEN_HEIGHT: f32 = 600.0;
 const SCREEN_WIDTH: f32 = 800.0;
+const FRAME_AHEAD_SLOWDOWN_AMOUNT: f32 = 1.1;
 
 fn window_conf() -> Conf {
     Conf {
@@ -25,8 +31,36 @@ fn window_conf() -> Conf {
     }
 }
 
+const P1_PORT: u16 = 7000;
+const P2_PORT: u16 = 7001;
+const LOCAL_IP: &'static str = "127.0.0.1";
+
 #[macroquad::main(window_conf)]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Read the environment variables
+    let args: Vec<String> = std::env::args().collect();
+    let player_arg = args.get(1).expect("Please enter p1 or p2");
+
+    let input_size = bincode::serialized_size(&Input::None).unwrap() as usize;
+
+    // Set up the session for
+    let (mut sess, local_handle) = if "p1" == player_arg {
+        let mut sess = P2PSession::new(2, input_size, P1_PORT)?;
+        sess.add_player(PlayerType::Local, 0)?;
+        sess.add_player(PlayerType::Remote(get_remote_addr(0, &args)), 1)?;
+        (sess, 0)
+    } else if "p2" == player_arg {
+        let mut sess = P2PSession::new(2, input_size, P2_PORT)?;
+        sess.add_player(PlayerType::Local, 1)?;
+        sess.add_player(PlayerType::Remote(get_remote_addr(1, &args)), 0)?;
+        (sess, 1)
+    } else {
+        panic!("Invalid player argument, please use p1 or p2")
+    };
+
+    sess.set_fps(game::TICKS_PER_SECOND as u32)?;
+    sess.start_session()?;
+
     // Set up some initial state
     let mut previous_state = None;
     let mut current_state = Game::new();
@@ -34,22 +68,50 @@ async fn main() {
     let mut current_time = Instant::now();
     let mut accumulator = Duration::new(0, 0);
     let tick_time = Duration::from_secs_f32(game::TICK_TIME);
+    let slow_tick_time = Duration::from_secs_f32(game::TICK_TIME * FRAME_AHEAD_SLOWDOWN_AMOUNT);
 
     loop {
-        // Get the current time
-        let new_time = Instant::now();
-        let frame_time = new_time - current_time;
-        current_time = new_time;
+        // Poll remote clients for inputs
+        sess.poll_remote_clients();
 
-        // Track our progress until the next update tick.
-        accumulator += frame_time;
+        for event in sess.events() {
+            println!("GGRS Event: {:?}", event);
+        }
 
-        // Since we separate the rendering from the update logic
-        // We might update multiple times per frame, or even zero
-        while accumulator >= tick_time {
-            previous_state = Some(current_state.clone());
-            current_state.update();
-            accumulator -= tick_time;
+        // We only want to update the game state if our session
+        // is properly running
+        if sess.current_state() == SessionState::Running {
+            // Get the current time
+            let new_time = Instant::now();
+            let frame_time = new_time - current_time;
+            current_time = new_time;
+
+            // Track our progress until the next update tick.
+            accumulator += frame_time;
+
+            // Run the simulation a bit slower to let other
+            // clients catch up
+            let this_tick_time = if sess.frames_ahead() > 0 {
+                slow_tick_time
+            } else {
+                tick_time
+            };
+
+            // Since we separate the rendering from the update logic
+            // We might update multiple times per frame, or even zero
+            while accumulator >= this_tick_time {
+                accumulator -= this_tick_time;
+
+                let local_input = controller::local_input();
+                let local_input = bincode::serialize(&local_input).unwrap();
+                previous_state = Some(current_state.clone());
+
+                match sess.advance_frame(local_handle, &local_input) {
+                    Ok(requests) => current_state.update(requests),
+                    Err(GGRSError::PredictionThreshold) => println!("Frame Skipped"),
+                    Err(e) => return Err(Box::new(e)),
+                };
+            }
         }
 
         // Begin the drawing
@@ -69,4 +131,16 @@ async fn main() {
 
         next_frame().await
     }
+}
+
+fn get_remote_addr(player_id: usize, args: &[String]) -> SocketAddr {
+    let ip = if let Some(ip) = args.get(2) {
+        ip.clone()
+    } else {
+        LOCAL_IP.to_string()
+    };
+
+    format!("{}:{}", ip, if player_id == 0 { P2_PORT } else { P1_PORT })
+        .parse()
+        .unwrap()
 }

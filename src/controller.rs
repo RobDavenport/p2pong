@@ -1,33 +1,20 @@
 use macroquad::prelude::{is_key_down, KeyCode};
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone)]
-pub struct Controller {
-    pub input: Option<Input>,
-}
-
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub enum Input {
+    None,
     Up,
     Down,
 }
 
-// Set up our key defaults
-const UP_KEYS: [KeyCode; 2] = [KeyCode::W, KeyCode::Up];
-const DOWN_KEYS: [KeyCode; 2] = [KeyCode::S, KeyCode::Down];
-
-impl Controller {
-    pub fn new() -> Self {
-        Self { input: None }
-    }
-
-    // Check if the keys of the passed in player are down
-    pub fn read_input(&mut self, player: usize) {
-        if is_key_down(UP_KEYS[player]) {
-            self.input = Some(Input::Up)
-        } else if is_key_down(DOWN_KEYS[player]) {
-            self.input = Some(Input::Down)
-        } else {
-            self.input = None
-        }
+// Convert local inputs into our "Input" struct
+pub fn local_input() -> Input {
+    if is_key_down(KeyCode::W) {
+        Input::Up
+    } else if is_key_down(KeyCode::S) {
+        Input::Down
+    } else {
+        Input::None
     }
 }
