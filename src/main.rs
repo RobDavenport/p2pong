@@ -20,6 +20,10 @@ const SCREEN_HEIGHT: f32 = 600.0;
 const SCREEN_WIDTH: f32 = 800.0;
 const FRAME_AHEAD_SLOWDOWN_AMOUNT: f32 = 1.1;
 
+const P1_PORT: u16 = 7000;
+const P2_PORT: u16 = 7001;
+const LOCAL_IP: &str = "127.0.0.1";
+
 fn window_conf() -> Conf {
     Conf {
         window_title: "P2Pong".to_owned(),
@@ -30,10 +34,6 @@ fn window_conf() -> Conf {
         ..Default::default()
     }
 }
-
-const P1_PORT: u16 = 7000;
-const P2_PORT: u16 = 7001;
-const LOCAL_IP: &str = "127.0.0.1";
 
 #[macroquad::main(window_conf)]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -135,8 +135,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn get_remote_addr(player_id: usize, args: &[String]) -> SocketAddr {
     let ip = if let Some(ip) = args.get(2) {
+        println!("IP address found, will try to connect to: {}", ip);
         ip.clone()
     } else {
+        println!("No IP address found, using {} default.", &LOCAL_IP);
         LOCAL_IP.to_string()
     };
 
