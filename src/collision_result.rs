@@ -1,6 +1,8 @@
+use macroquad::prelude::Vec2;
 pub enum CollisionResult {
     Top,
     Bottom,
-    Score,
-    Paddle,
+    Left,
+    Right,
+    Paddle(Vec2),
 }

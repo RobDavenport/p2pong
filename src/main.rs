@@ -11,8 +11,8 @@ use blend::Blend;
 use game::*;
 use macroquad::prelude::*;
 
-const SCREEN_HEIGHT: f32 = 800.0;
-const SCREEN_WIDTH: f32 = 1600.0;
+const SCREEN_HEIGHT: f32 = 400.0;
+const SCREEN_WIDTH: f32 = 800.0;
 
 fn window_conf() -> Conf {
     Conf {
@@ -56,6 +56,7 @@ async fn main() {
         } else {
             current_state.draw()
         };
+
         next_frame().await
     }
 }

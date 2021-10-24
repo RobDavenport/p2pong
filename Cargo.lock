@@ -459,6 +459,7 @@ dependencies = [
 name = "p2pong"
 version = "0.1.0"
 dependencies = [
+ "bincode",
  "ggrs",
  "macroquad",
 ]
